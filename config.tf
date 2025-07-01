@@ -50,7 +50,7 @@ resource "yandex_vpc_network" "default" {}
 
 resource "yandex_vpc_subnet" "default-ru-central1-d" {
   zone           = "ru-central1-d"
-  network_id     = yandex_vpc_network.default-ru-central1-d.id
+  network_id     = yandex_vpc_network.default.id
   v4_cidr_blocks = ["10.130.0.0/24"]
 }
 // Create a new Compute Disk.
