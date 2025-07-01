@@ -31,7 +31,9 @@ resource "yandex_compute_instance" "default" {
   }
 
   boot_disk {
-    disk_id = yandex_compute_disk.boot-disk.id
+      initialize_params {
+      image_id = "fd8v0s6adqu3ui3rsuap" # ОС (Ubuntu, 22.04 LTS)
+    }
   }
 
   network_interface {
