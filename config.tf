@@ -37,6 +37,7 @@ resource "yandex_compute_instance" "default" {
   network_interface {
     index     = 1
     subnet_id = yandex_vpc_subnet.default-ru-central1-d.id
+    nat-ip-version= ipv4
   }
 
   metadata = {
