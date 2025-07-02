@@ -126,12 +126,14 @@ resource "yandex_compute_instance" "prod" {
   }
   depends_on = [yandex_compute_instance.build]
 }
+
+//http://158.160.149.138:8080/hello/
+
 output "build_instance_ip" {
   value = yandex_compute_instance.build.network_interface.0.nat_ip_address
 }
 
 output "prod_instance_ip" {
   value = yandex_compute_instance.prod.network_interface.0.nat_ip_address
-  description = "Access the application at: http://<prod_ip>:8080/hello/"
 }
 
