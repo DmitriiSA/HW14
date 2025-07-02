@@ -17,10 +17,19 @@ provider "yandex" {
   zone      = "ru-central1-d"
 }
 
-// Create a new Compute Instance
+// Auxiliary resources for Compute Instance
+resource "yandex_vpc_network" "default" {}
+
+resource "yandex_vpc_subnet" "default-ru-central1-d" {
+  zone           = "ru-central1-d"
+  network_id     = yandex_vpc_network.default.id
+  v4_cidr_blocks = ["10.130.0.0/24"]
+}
+
+// Create a new Compute Instance ( Java, Maven and Git)
 //
-resource "yandex_compute_instance" "default" {
-  name        = "compute-vm-yc"
+resource "yandex_compute_instance" "build" {
+  name        = "build-instance"
   platform_id = "standard-v3"
   zone        = "ru-central1-d"
 
@@ -32,7 +41,10 @@ resource "yandex_compute_instance" "default" {
 
   boot_disk {
       initialize_params {
-      image_id = "fd8v0s6adqu3ui3rsuap" # ОС (Ubuntu, 22.04 LTS)
+      image_id = "fd8vmcue7aajpmeo39kk" # ОС Ubuntu 20.04 LTS
+      size     =  7
+      type     = "network-ssd"
+      zone     = "ru-central1-d"
     }
   }
 
@@ -47,22 +59,32 @@ resource "yandex_compute_instance" "default" {
   metadata = {
     foo      = "bar"
     ssh-keys = "ubuntu:${file("~/.ssh/id_ed25519.pub")}"
+       user-data = <<-EOF
+      #cloud-config
+      package_update: true
+      package_upgrade: true
+      packages:
+        - default-jdk
+        - maven
+        - git
+      runcmd:
+        - git clone https://github.com/boxfuse/boxfuse-sample-java-war-hello.git /tmp/hello
+        - cd /tmp/hello && mvn package
+        - mkdir -p /var/www/html
+        - cp /tmp/hello/target/hello-1.0.war /var/www/html/
+        - apt-get install -y nginx
+        - systemctl start nginx
+      EOF
+
   }
 }
 
-// Auxiliary resources for Compute Instance
-resource "yandex_vpc_network" "default" {}
-
-resource "yandex_vpc_subnet" "default-ru-central1-d" {
-  zone           = "ru-central1-d"
-  network_id     = yandex_vpc_network.default.id
-  v4_cidr_blocks = ["10.130.0.0/24"]
-}
 // Create a new Compute Disk.
 //
-resource "yandex_compute_disk" "boot-disk" {
-  name     = "boot"
-  size     =  6
-  type     = "network-ssd"
-  zone     = "ru-central1-d"
-}
+//resource "yandex_compute_disk" "boot-disk" {
+  //name     = "boot"
+  //size     =  7
+  //type     = "network-ssd"
+  //zone     = "ru-central1-d"
+//}
+
